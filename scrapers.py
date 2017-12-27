@@ -47,7 +47,7 @@ class SimpleLoginScraper(WebScraper):
 	supplying the credentials and pressing enter.
 	"""
 	def _login(self):
-		driver.get((self._login_url))
+		self._driver.get((self._login_url))
 
 		# fill in username and hit the next button
 		username_field = self._find_username_field()
@@ -143,7 +143,7 @@ class USBankScraper(WebScraper):
 		return self._driver.find_element_by_name('personalId')
 
 	def _login(self):
-		driver.get(('https://onlinebanking.usbank.com/Auth/Login'))
+		self._driver.get(('https://onlinebanking.usbank.com/Auth/Login'))
 
 		# fill in username and hit the next button
 		username_field = self._find_username_field()
@@ -163,38 +163,5 @@ class USBankScraper(WebScraper):
 
 	def get_account_balance(self):
 		self._login()
-		account_balance = webdriver_wait.until(EC.presence_of_element_located((By.ID, 'DepositSpanHeaderTotal')))
+		account_balance = self._webdriver_wait.until(EC.presence_of_element_located((By.ID, 'DepositSpanHeaderTotal')))
 		return pennies_from_text(account_balance.text)
-		
-
-if __name__ == '__main__':
-	from utils import get_driver, get_webdriver_wait
-	from credentials import JSONCredentials
-
-	driver = get_driver()
-	webdriver_wait = get_webdriver_wait(driver)
-
-	my_pennies = 0
-
-	credentials = JSONCredentials(''.join(open('Credentials/USBank.json', 'r').readlines()))
-	scraper = USBankScraper(driver, webdriver_wait, credentials)
-	us_bank_pennies = scraper.get_account_balance()
-	print "US bank account balance: %s" % us_bank_pennies
-
-	credentials = JSONCredentials(''.join(open('Credentials/vanguard.json', 'r').readlines()))
-	scraper = VanguardScraper(driver, webdriver_wait, credentials)
-	vanguard_pennies = scraper.get_account_balance()
-	print "Vanguard account balance: %s" % vanguard_pennies
-
-	credentials = JSONCredentials(''.join(open('Credentials/ally.json', 'r').readlines()))
-	scraper = AllyScraper(driver, webdriver_wait, credentials)
-	ally_pennies = scraper.get_account_balance()
-	print "Ally account balance: %s" % ally_pennies
-
-	credentials = JSONCredentials(''.join(open('Credentials/fidelity.json', 'r').readlines()))
-	scraper = FidelityScraper(driver, webdriver_wait, credentials)
-	fidelity_pennies = scraper.get_account_balance()
-	print "Fidelity account balance: %s" % fidelity_pennies
-
-	print "Total money: $%s" % ((us_bank_pennies + vanguard_pennies + ally_pennies + fidelity_pennies) / 100.0)
-	driver.close()

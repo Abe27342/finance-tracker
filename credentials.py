@@ -1,5 +1,11 @@
+from os import listdir
+from os.path import isfile, splitext, join
+
+from azure.keyvault import KeyVaultClient, KeyVaultId
+from azure.common.credentials import UserPassCredentials
+
 from abc import abstractproperty, abstractmethod
-from json import loads
+from json import loads, load
 
 class Credentials:
 	@abstractproperty
@@ -20,7 +26,6 @@ class Credentials:
 		    str: Answer for the provided security question.
 		"""
 		pass
-
 
 class JSONCredentials(Credentials):
 	"""
@@ -54,3 +59,25 @@ class JSONCredentials(Credentials):
 	def answer_security_question(self, question):
 		return self._credentials["security_questions"][question]
 
+class Vault:
+	def __init__(self, ac):
+		self._uri = ac["uri"]
+		self._client = KeyVaultClient(UserPassCredentials(ac["username"], ac["password"], resource='https://vault.azure.net'))
+
+	def get_website_credentials(self, website_name):
+		secret_bundle = self._client.get_secret(self._uri, website_name, KeyVaultId.version_none)
+		return JSONCredentials(secret_bundle.value)
+
+def get_vault():
+	ac = load(open('Credentials/azure.json', 'r'))
+	return Vault(ac)
+
+if __name__ == '__main__':
+	exit()
+	client = get_keyvault_client()
+	basedir = 'Credentials/'
+	for fname in listdir(basedir):
+		(website, ext) = splitext(fname.lower())
+		if isfile(join(basedir, fname)) and ext == '.json':
+			website_credentials = ''.join(open(join(basedir, fname), 'r').readlines())
+			client.set_secret(ac["uri"], website, website_credentials)
