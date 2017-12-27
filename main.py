@@ -10,15 +10,15 @@ if __name__ == '__main__':
     webdriver_wait = get_webdriver_wait(driver)
     vault = get_vault()
 
-    websites_to_scrapers = {'usbank' : USBankScraper, 
-                            'vanguard' : VanguardScraper, 
-                            'ally' : AllyScraper, 
-                            'fidelity' : FidelityScraper}
+    website_scraper_pairs = [('usbank', USBankScraper), 
+                             ('vanguard', VanguardScraper), 
+                             ('ally', AllyScraper),
+                             ('fidelity', FidelityScraper)]
 
     with open('C:/Users/Abram/OneDrive - Harvey Mudd College/Finance/net_worth.csv', 'a') as f:
         next_line = [str(datetime.now())]
 
-        for website, scraper_class in websites_to_scrapers.iteritems():
+        for website, scraper_class in website_scraper_pairs:
             print 'Gathering %s data.' % website
             scraper = scraper_class(driver, webdriver_wait, vault.get_website_credentials(website))
             next_line.append(scraper.get_account_balance())
