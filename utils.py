@@ -18,3 +18,13 @@ def get_driver():
 
 def get_webdriver_wait(driver):
 	return WebDriverWait(driver, 10)
+
+def pennies_from_text(text):
+	text = text.strip()
+	if text[0] == '$':
+		text = text[1:]
+
+	text = ''.join([i for i in text if i != ','])
+	(dollars, sep, cents) = text.partition('.')
+	assert sep == '.'
+	return int(dollars + cents) # note this is string addition ;)
