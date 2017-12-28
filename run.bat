@@ -1,2 +1,3 @@
 @ECHO OFF
-python main.py
+start python main.py
+exit
