@@ -134,10 +134,8 @@ class USBankScraper(WebScraper):
 
 	def _find_password_field(self):
 		password = self._webdriver_wait.until(EC.presence_of_element_located((By.NAME, 'password')))
-		# With the way USBank loads the webpage, it seems the password field appears before it is visible.
+		# With the way USBank loads the webpage, it seems the password field gets located before it is visible.
 		return self._webdriver_wait.until(EC.visibility_of(password))
-
-		# _driver.find_element_by_name('password')
 
 	def _find_username_field(self):
 		return self._driver.find_element_by_name('personalId')

@@ -73,7 +73,6 @@ def get_vault():
 	return Vault(ac)
 
 if __name__ == '__main__':
-	exit()
 	client = get_keyvault_client()
 	basedir = 'Credentials/'
 	for fname in listdir(basedir):

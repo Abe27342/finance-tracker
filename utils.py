@@ -27,4 +27,4 @@ def pennies_from_text(text):
 	text = ''.join([i for i in text if i != ','])
 	(dollars, sep, cents) = text.partition('.')
 	assert sep == '.'
-	return int(dollars + cents) # note this is string addition ;)
+	return int(dollars + cents) # note this is string addition :)
