@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from abc import abstractmethod, abstractproperty
@@ -77,6 +78,13 @@ class VanguardScraper(SimpleLoginScraper):
 
 	def get_account_balance(self):
 		self._login()
+		try:
+			# Vanguard puts up holiday warnings sometimes.
+			button = self._webdriver_wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '#continueInput')))
+			button.click()
+		except NoSuchElementException:
+			pass
+
 		account_balance = self._webdriver_wait.until(
 		    EC.presence_of_element_located((By.XPATH, '//*[@id="main-content"]/div[1]/div[2]/div[2]/div/div[2]/div[1]/div[1]/div[1]/span'))
 		    )
