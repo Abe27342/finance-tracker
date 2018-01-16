@@ -4,6 +4,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from abc import abstractmethod, abstractproperty
 from utils import pennies_from_text
+from time import sleep
 
 class WebScraper:
 	"""
@@ -128,6 +129,54 @@ class FidelityScraper(SimpleLoginScraper):
 			'body > div.fidgrid.fidgrid--shadow.fidgrid--nogutter > div.full-page--container > div.fidgrid--row.port-summary-container > div.port-summary-content.clearfix > div:nth-child(2) > div.fidgrid--content > div > div.account-selector-wrapper.port-nav.account-selector--reveal > div.account-selector.account-selector--normal-mode.clearfix > div.account-selector--main-wrapper > div.account-selector--accounts-wrapper > div.account-selector--tab.account-selector--tab-all.js-portfolio.account-selector--target-tab.js-selected > span.account-selector--tab-row.account-selector--all-accounts-balance.js-portfolio-balance'))
 		)
 		return pennies_from_text(account_balance.text)
+
+class text_has_loaded(object):
+    """ An expectation for checking if the given text is present in the
+    specified element.
+    locator, text
+    """
+    def __init__(self, locator):
+        self.locator = locator
+
+    def __call__(self, driver):
+        try:
+            element_text = EC._find_element(driver, self.locator).text
+            return len(element_text) > 0
+        except StaleElementReferenceException:
+            return False
+
+class PremeraScraper(SimpleLoginScraper):
+	def _find_password_field(self):
+		return self._driver.find_element_by_id('Password')
+
+	def _find_username_field(self):
+		return self._driver.find_element_by_id('LoginId')
+
+	@property
+	def _login_url(self):
+		return 'https://www.premera.com/portals/member/account/logon'
+
+	def get_account_balance(self):
+		self._login()
+		personal_funding_account = self._webdriver_wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#toggle1 > li:nth-child(5) > a')))
+		self._webdriver_wait.until(EC.visibility_of(personal_funding_account))
+		personal_funding_account.click()
+		sleep(1)
+		manage_your_account = self._webdriver_wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#content-main > p:nth-child(4) > a')))
+		self._webdriver_wait.until(EC.visibility_of(manage_your_account))
+		orig_tab = self._driver.window_handles[0]
+		manage_your_account.click()
+		sleep(1)
+		for tab in self._driver.window_handles:
+			if tab != orig_tab:
+				new_tab = tab
+				print tab
+
+		self._driver.switch_to_window(new_tab)
+		self._webdriver_wait.until(text_has_loaded((By.ID, 'totalValue')))
+		account_balance = self._driver.find_element_by_id('totalValue')
+		return pennies_from_text(account_balance.text)
+
 
 # The US bank website has a more annoying log on process, so it doesn't get simple log in :(
 class USBankScraper(WebScraper):

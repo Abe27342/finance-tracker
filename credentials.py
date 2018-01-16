@@ -73,7 +73,8 @@ def get_vault():
 	return Vault(ac)
 
 if __name__ == '__main__':
-	client = get_keyvault_client()
+	ac = load(open('Credentials/azure.json', 'r'))
+	client = Vault(ac)._client
 	basedir = 'Credentials/'
 	for fname in listdir(basedir):
 		(website, ext) = splitext(fname.lower())

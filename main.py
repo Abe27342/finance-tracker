@@ -1,7 +1,7 @@
 
 if __name__ == '__main__':
     import argparse
-    from scrapers import USBankScraper, AllyScraper, FidelityScraper, VanguardScraper
+    from scrapers import *
     from datetime import datetime
     from credentials import get_vault
     from utils import get_driver, get_webdriver_wait
@@ -16,7 +16,8 @@ if __name__ == '__main__':
     website_scraper_pairs = [('usbank', USBankScraper), 
                              ('vanguard', VanguardScraper), 
                              ('ally', AllyScraper),
-                             ('fidelity', FidelityScraper)]
+                             ('fidelity', FidelityScraper),
+                             ('premera', PremeraScraper)]
     
     with open(args.output, 'a') as f:
         next_line = [str(datetime.now())]
