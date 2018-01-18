@@ -10,7 +10,7 @@ def get_driver():
     # questions (when I shouldn't have to...)
     # options.add_argument('headless')
     # ... so instead I'll use this one ;)
-    # options.add_argument('--window-position=-32000,-32000')
+    options.add_argument('--window-position=-32000,-32000')
     driver = webdriver.Chrome(options=options)
     driver.set_window_size(1920, 1080)
     driver.implicitly_wait(1)
