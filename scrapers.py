@@ -107,7 +107,7 @@ class AllyScraper(SimpleLoginScraper):
     def get_account_balance(self):
         self._login()
         account_balance = self._webdriver_wait.until(
-            EC.presence_of_element_located((By.XPATH, '//*[@id="ember2248"]/tfoot/td[1]'))
+            EC.presence_of_element_located((By.XPATH, '//*[starts-with(@id, "ember")]/tfoot[th/text()[contains(.,"Total Balance")]]/td[1]'))
             )
         return pennies_from_text(account_balance.text)
 
@@ -160,6 +160,7 @@ class PremeraScraper(SimpleLoginScraper):
         self._login()
         personal_funding_account = self._webdriver_wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#toggle1 > li:nth-child(5) > a')))
         self._webdriver_wait.until(EC.visibility_of(personal_funding_account))
+        sleep(1)
         personal_funding_account.click()
         sleep(1)
         manage_your_account = self._webdriver_wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#content-main > p:nth-child(4) > a')))

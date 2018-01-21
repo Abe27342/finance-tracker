@@ -45,3 +45,4 @@ if __name__ == '__main__':
         f.write(','.join([str(i) for i in next_line]) + '\n')
 
     driver.quit()
+    exit(0)
