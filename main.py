@@ -17,8 +17,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Read account balances and dump them to csv.')
     parser.add_argument('--output', type = str, help = 'Filepath to csv.')
     parser.add_argument('--email', type = str, help = 'Email address to send failure notifications to.')
+    parser.add_argument('--debug', action = 'store_true', help = 'Don\'t catch errors or continue on failure.')
     args = parser.parse_args()
-    driver = get_driver()
+    driver = get_driver(args.debug)
     webdriver_wait = get_webdriver_wait(driver)
     vault = get_vault()
 
@@ -35,6 +36,10 @@ if __name__ == '__main__':
             try:
                 account_balance = scraper.get_account_balance()
             except Exception as e:
+                if args.debug:
+                    print(''.join(traceback.format_exc()))
+                    exit(1)
+
                 account_balance = 'N/A'
                 if notifier:
                     tb = ''.join(traceback.format_exc())
@@ -45,4 +50,3 @@ if __name__ == '__main__':
         f.write(','.join([str(i) for i in next_line]) + '\n')
 
     driver.quit()
-    exit(0)

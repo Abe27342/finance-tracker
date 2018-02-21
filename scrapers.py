@@ -211,7 +211,7 @@ class USBankScraper(WebScraper):
             EC.presence_of_element_located((By.NAME, 'txtAlphaNum'))
            )
 
-        question = self._driver.find_element_by_xpath('//*[@id="dvLoginWidgetDir"]/form[2]/div[3]/div/div[1]/div/div[1]/label')
+        question = self._driver.find_element_by_xpath('//*/div[div[@id="divAlphaNum"]]/div[1]')
         security_box.send_keys(self._credentials.answer_security_question(question.text))
         self._click_next_button()
         password_field = self._find_password_field()

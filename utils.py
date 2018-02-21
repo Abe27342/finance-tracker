@@ -2,7 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 
-def get_driver():
+def get_driver(debug):
     options = Options()
 
     # Would eventually like to use this line, but it makes various auth sites think
@@ -10,7 +10,9 @@ def get_driver():
     # questions (when I shouldn't have to...)
     # options.add_argument('headless')
     # ... so instead I'll use this one ;)
-    options.add_argument('--window-position=-32000,-32000')
+    if not debug:
+        options.add_argument('--window-position=-32000,-32000')
+    
     driver = webdriver.Chrome(options=options)
     driver.set_window_size(1920, 1080)
     driver.implicitly_wait(1)
