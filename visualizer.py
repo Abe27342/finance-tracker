@@ -44,5 +44,7 @@ if __name__ == '__main__':
         mpl.ticker.FuncFormatter(lambda x, p: '$' + format(int(x / 100), ',')))
     dates = [pd.Timestamp(date).to_pydatetime() for date in df['Date']]
     columns = [[float(element) for element in df[column]] for column in df.columns if column != 'Date']
-    plot = plt.stackplot(dates, *columns, baseline='zero')
+    plot = plt.stackplot(dates, *columns, baseline='zero', labels = [column for column in df.columns if column != 'Date'])
+    plt.legend(loc = 'upper left')
+    plt.title('Net worth')
     plt.show(plot)
