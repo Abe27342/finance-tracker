@@ -1,7 +1,7 @@
 from scrapers import *
 
 website_scraper_pairs = [('usbank', USBankScraper),
-                         ('vanguard', VanguardScraper), 
+                         ('vanguard', VanguardScraper),
                          ('ally', AllyScraper),
                          ('fidelity', FidelityScraper),
                          ('premera', PremeraScraper)]
