@@ -19,7 +19,7 @@ def get_driver(debug):
     return driver
 
 def get_webdriver_wait(driver):
-    return WebDriverWait(driver, 15)
+    return WebDriverWait(driver, 60)
 
 def pennies_from_text(text):
     text = text.strip()

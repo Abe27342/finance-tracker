@@ -1,6 +1,6 @@
 from scrapers import *
 
-website_scraper_pairs = [('usbank', USBankScraper), 
+website_scraper_pairs = [('usbank', USBankScraper),
                          ('vanguard', VanguardScraper), 
                          ('ally', AllyScraper),
                          ('fidelity', FidelityScraper),
@@ -18,7 +18,17 @@ if __name__ == '__main__':
     parser.add_argument('--output', type = str, help = 'Filepath to csv.')
     parser.add_argument('--email', type = str, help = 'Email address to send failure notifications to.')
     parser.add_argument('--debug', action = 'store_true', help = 'Don\'t catch errors or continue on failure.')
+    parser.add_argument('--checkdate', action = 'store_true', help = 'Don\'t do any work if the log file has an entry from today already.')
+
     args = parser.parse_args()
+    if args.checkdate:
+        with open(args.output, 'r') as f:
+            last_line = [line for line in f.readlines() if not line.isspace()][-1]
+            current_time = datetime.now()
+            # YYYY-MM-DD, so first 10 characters
+            if str(current_time)[:10] == last_line[:10]:
+                exit(0)
+
     driver = get_driver(args.debug)
     webdriver_wait = get_webdriver_wait(driver)
     vault = get_vault()
@@ -38,6 +48,7 @@ if __name__ == '__main__':
             except Exception as e:
                 if args.debug:
                     print(''.join(traceback.format_exc()))
+                    driver.quit()
                     exit(1)
 
                 account_balance = 'N/A'
