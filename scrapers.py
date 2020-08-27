@@ -110,7 +110,7 @@ class AllyScraper(SimpleLoginScraper):
     def get_account_balance(self):
         self._login()
         account_balance = self._webdriver_wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, '.total.stat'))
+            EC.presence_of_element_located((By.XPATH, '//*[starts-with(@id, "ember")]/tfoot/tr[th/text()[contains(.,"TOTAL")]]/td[1]'))
             )
         return pennies_from_text(account_balance.text)
 

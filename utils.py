@@ -5,7 +5,8 @@ from selenium.webdriver.chrome.options import Options
 def get_driver(debug, profile = None):
     options = Options()
     if profile is not None:
-        options.add_argument('--user-data-dir="%s"' % profile)
+        print 'Using profile: %s' % profile
+        options.add_argument('--user-data-dir=%s' % profile)
 
     # Would eventually like to use this line, but it makes various auth sites think
     # the browser has a different identity and I don't want to automate more security

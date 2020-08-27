@@ -30,7 +30,7 @@ if __name__ == '__main__':
             if str(current_time)[:10] == last_line[:10]:
                 exit(0)
 
-    driver = get_driver(args.debug)
+    driver = get_driver(args.debug, args.profile)
     webdriver_wait = get_webdriver_wait(driver)
     vault = get_vault()
 
