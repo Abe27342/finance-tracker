@@ -9,7 +9,7 @@ from time import sleep
 
 class WebScraper:
     """
-    Simple abstract base class for a website scraper which we will pull 
+    Simple abstract base class for a website scraper which we will pull
     financial data with. Given a selenium driver to initialize (and waiter),
     it provides an API to get the account balance for that website.
     """
@@ -51,12 +51,14 @@ class SimpleLoginScraper(WebScraper):
     """
     def _login(self):
         self._driver.get((self._login_url))
-
+        sleep(5)
         # fill in username and hit the next button
         username_field = self._find_username_field()
         username_field.send_keys(self._credentials.username)
+        sleep(2)
         password_field = self._find_password_field()
         password_field.send_keys(self._credentials.password)
+        sleep(2)
         password_field.send_keys(Keys.ENTER)
 
     @abstractproperty
@@ -69,10 +71,10 @@ class SimpleLoginScraper(WebScraper):
 
 class VanguardScraper(SimpleLoginScraper):
     def _find_password_field(self):
-        return self._driver.find_element_by_name('PASSWORD')
+        return self._driver.find_element_by_id('password')
 
     def _find_username_field(self):
-        return self._driver.find_element_by_name('USER')
+        return self._driver.find_element_by_id('username')
 
     @property
     def _login_url(self):
@@ -90,7 +92,7 @@ class VanguardScraper(SimpleLoginScraper):
             pass
 
         account_balance = self._webdriver_wait.until(
-            EC.presence_of_element_located((By.XPATH, '//*[@id="main-content"]/div[1]/div[2]/div/div/div[2]/div[1]/div[2]/div/div[3]/div[2]/span'))
+            EC.presence_of_element_located((By.XPATH, '//*[@id="balances"]/div/div[3]/div[2]/span'))
             )
         return pennies_from_text(account_balance.text)
 
@@ -108,7 +110,7 @@ class AllyScraper(SimpleLoginScraper):
     def get_account_balance(self):
         self._login()
         account_balance = self._webdriver_wait.until(
-            EC.presence_of_element_located((By.XPATH, '//*[starts-with(@id, "ember")]/tfoot/tr[th/text()[contains(.,"TOTAL")]]/td[1]'))
+            EC.presence_of_element_located((By.CSS_SELECTOR, '.total.stat'))
             )
         return pennies_from_text(account_balance.text)
 
@@ -125,16 +127,14 @@ class FidelityScraper(SimpleLoginScraper):
 
     def get_account_balance(self):
         self._login()
-        account_balance = self._webdriver_wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR,
-            '#tabContentSummary > div.ledger.clearfix.js-ledger-card > div.ledger--section.js-total-balance.fidgrid--col-third > div.ledger--section-row.ledger--top-row > span'))
-        )
         sleep(5)
+        self._driver.get(('https://oltx.fidelity.com/ftgw/fbc/oftop/portfolio#balances'))
+
         account_balance = self._webdriver_wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR,
-            '#tabContentSummary > div.ledger.clearfix.js-ledger-card > div.ledger--section.js-total-balance.fidgrid--col-third > div.ledger--section-row.ledger--top-row > span'))
+            EC.presence_of_element_located((By.XPATH,
+            '//*[@id="tabContentBalance"]/div[2]/div/div/div[1]/table/tbody/tr[5]/td[2]/span'))
         )
-        
+
         return pennies_from_text(account_balance.text)
 
 class text_has_loaded(object):
@@ -154,10 +154,16 @@ class text_has_loaded(object):
 
 class PremeraScraper(SimpleLoginScraper):
     def _find_password_field(self):
-        return self._driver.find_element_by_id('Password')
+        return self._driver.find_element_by_id('ContentPlaceHolder1_MFALoginControl1_UserIDView_tbxPassword_UiInput')
 
     def _find_username_field(self):
-        return self._driver.find_element_by_id('LoginId')
+        # hack
+        employer_group = self._driver.find_element_by_xpath('//*[@id="ngb-panel-0-header"]/button')
+        employer_group.click()
+        sign_in_button = self._driver.find_element_by_xpath('//*[@id="ngb-panel-0"]/div/p/a')
+        sign_in_button.click()
+        sleep(1)
+        return self._driver.find_element_by_id('ContentPlaceHolder1_MFALoginControl1_UserIDView_txtUserid_UiInput')
 
     @property
     def _login_url(self):
@@ -165,25 +171,29 @@ class PremeraScraper(SimpleLoginScraper):
 
     def get_account_balance(self):
         self._login()
-        personal_funding_account = self._webdriver_wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#toggle1 > li:nth-child(5) > a')))
+        #
+        personal_funding_account = self._webdriver_wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#cycCard > div > div > div > div.mb-0 > pbc-cta > a')))
         self._webdriver_wait.until(EC.visibility_of(personal_funding_account))
         sleep(1)
         personal_funding_account.click()
         sleep(1)
-        manage_your_account = self._webdriver_wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#content-main > p:nth-child(5) > a')))
-        self._webdriver_wait.until(EC.visibility_of(manage_your_account))
+        # manage_your_account = self._webdriver_wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#content-main > p:nth-child(5) > a')))
+        # self._webdriver_wait.until(EC.visibility_of(manage_your_account))
         orig_tab = self._driver.window_handles[0]
-        manage_your_account.click()
+        # manage_your_account.click()
         sleep(1)
+        new_tab = None
         for tab in self._driver.window_handles:
             if tab != orig_tab:
                 new_tab = tab
+
+        if new_tab is None:
+            raise Exception
 
         self._driver.switch_to_window(new_tab)
         self._webdriver_wait.until(text_has_loaded((By.ID, 'investmentBalance')))
         account_balance = self._driver.find_element_by_id('investmentBalance')
         return pennies_from_text(account_balance.text) + pennies_from_text("$2500.00")
-
 
 # The US bank website has a more annoying log on process, so it doesn't get simple log in :(
 class USBankScraper(WebScraper):
@@ -206,27 +216,26 @@ class USBankScraper(WebScraper):
         return password
 
     def _find_username_field(self):
-        return self._driver.find_element_by_name('personalId')
+        return self._webdriver_wait.until(EC.presence_of_element_located((By.ID, 'aw-personal-id')))
 
     def _login(self):
-        self._driver.get(('https://usbank.com/'))
+        self._driver.get(('https://onlinebanking.usbank.com/Auth/Login'))
 
         # fill in username and hit the next button
         username_field = self._find_username_field()
         username_field.send_keys(self._credentials.username)
-        username_field.send_keys(Keys.ENTER)
+        # username_field.send_keys(Keys.ENTER)
 
         try:
-            sleep(30)
             # self._find_password_field()
-            ActionChains(self._driver).send_keys(self._credentials.password).send_keys(Keys.ENTER).perform()
+            ActionChains(self._driver).send_keys(Keys.TAB).send_keys(Keys.TAB).send_keys(Keys.TAB).send_keys(self._credentials.password).send_keys(Keys.ENTER).perform()
+            self._webdriver_wait.until(text_has_loaded((By.ID, 'DepositSpanHeaderTotal')))
         except TimeoutException:
             # Maybe timed out b/c there are security questions.
             security_box = self._webdriver_wait.until(
                 EC.presence_of_element_located((By.ID, 'ans'))
                )
             question = self._driver.find_element_by_xpath('//*[@id="customUI"]/div[2]/form/label')
-            
             security_box.send_keys(self._credentials.answer_security_question(question.text))
             security_box.send_keys(Keys.ENTER)
             sleep(5) # ew but I'm too scared to remove it.

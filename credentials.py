@@ -2,7 +2,7 @@ from os import listdir
 from os.path import isfile, splitext, join
 
 from azure.keyvault import KeyVaultClient, KeyVaultId
-from azure.common.credentials import UserPassCredentials
+from azure.common.credentials import ServicePrincipalCredentials
 
 from abc import abstractproperty, abstractmethod
 from json import loads, load
@@ -33,7 +33,7 @@ class JSONCredentials(Credentials):
 	{
 	    "username" : "userFoo",
 	    "password" : "passwordBar",
-	    "security_questions" : 
+	    "security_questions" :
 	    {
 	        "What's your favorite color?" : "Red",
 	        "What is your name?" : "None of your business"
@@ -43,7 +43,7 @@ class JSONCredentials(Credentials):
 
 	def __init__(self, json_credentials):
 		"""
-		Args: 
+		Args:
 			json_credentials (str): Description of the credentials in the above format.
 		"""
 		self._credentials = loads(json_credentials)
@@ -62,7 +62,12 @@ class JSONCredentials(Credentials):
 class Vault:
 	def __init__(self, ac):
 		self._uri = ac["uri"]
-		self._client = KeyVaultClient(UserPassCredentials(ac["username"], ac["password"], resource='https://vault.azure.net'))
+		app_id = ac["appId"]
+		app_secret = ac["password"]
+		tenant_id = ac["tenant"]
+
+		credentials = ServicePrincipalCredentials(client_id=app_id, secret=app_secret, tenant=tenant_id, resource='https://vault.azure.net')
+		self._client = KeyVaultClient(credentials)
 
 	def get_website_credentials(self, website_name):
 		secret_bundle = self._client.get_secret(self._uri, website_name, KeyVaultId.version_none)

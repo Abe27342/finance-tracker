@@ -27,6 +27,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Summarize csv data to create charts.')
     parser.add_argument('--filepath', type = str, help = 'Filepath to csv.', required = True)
     parser.add_argument('--debug', action = 'store_true', help = 'Debug issues with visusalizer.')
+    parser.add_argument('--baseline', help = 'One of [zero, wiggle, weighted_wiggle, sym]')
 
     args = parser.parse_args()
     df = None
@@ -44,7 +45,8 @@ if __name__ == '__main__':
         mpl.ticker.FuncFormatter(lambda x, p: '$' + format(int(x / 100), ',')))
     dates = [pd.Timestamp(date).to_pydatetime() for date in df['Date']]
     columns = [[float(element) for element in df[column]] for column in df.columns if column != 'Date']
-    plot = plt.stackplot(dates, *columns, baseline='zero', labels = [column for column in df.columns if column != 'Date'])
+    baseline = args.baseline # 'zero' 'wiggle' 'weighted_wiggle' 'sym'
+    plot = plt.stackplot(dates, *columns, baseline=baseline, labels = [column for column in df.columns if column != 'Date'])
     plt.legend(loc = 'upper left')
     plt.title('Net worth')
     plt.show(plot)

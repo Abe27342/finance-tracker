@@ -2,19 +2,21 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 
-def get_driver(debug):
+def get_driver(debug, profile = None):
     options = Options()
+    if profile is not None:
+        options.add_argument('--user-data-dir="%s"' % profile)
 
     # Would eventually like to use this line, but it makes various auth sites think
     # the browser has a different identity and I don't want to automate more security
     # questions (when I shouldn't have to...)
     # options.add_argument('headless')
     # ... so instead I'll use this one ;)
-    if not debug:
-        options.add_argument('--window-position=-32000,-32000')
-    
+    # if not debug:
+    #     options.add_argument('--window-position=-32000,-32000')
+
     driver = webdriver.Chrome(options=options)
-    driver.set_window_size(1920, 1080)
+    # driver.set_window_size(1920, 1080)
     driver.implicitly_wait(1)
     return driver
 
